@@ -48,7 +48,7 @@ siia-exam-main/
 
 * **Python** ≥ 3.9
 * **PyTorch** (CPU or CUDA build, consistent with your environment)
-* **RecBole** (latest stable release)
+* **RecBole** (latest stable release on https://github.com/RUCAIBox/RecBole.git)
 * **pandas**
 * For **CompGCN**: **torch‑scatter** compatible with your installed PyTorch/CUDA version
 
