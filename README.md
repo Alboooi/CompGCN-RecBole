@@ -48,7 +48,7 @@ siia-exam-main/
 
 * **Python** ≥ 3.9
 * **PyTorch** (CPU or CUDA build, consistent with your environment)
-* **RecBole** (latest stable release on https://github.com/RUCAIBox/RecBole.git)
+* **RecBole** (latest stable release)
 * **pandas**
 * For **CompGCN**: **torch‑scatter** compatible with your installed PyTorch/CUDA version
 
@@ -71,6 +71,45 @@ pip install recbole pandas
 # Required for CompGCN (choose a wheel matching your PyTorch/CUDA)
 pip install torch-scatter
 ```
+
+## Installing the Custom Models into RecBole (knowledge\_aware)
+
+To enable RecBole to discover and instantiate the custom models in this repository, you must copy the model sources into RecBole’s **`knowledge_aware`** package and update its module initialiser.
+
+1. **Locate RecBole’s `knowledge_aware` package** (inside your active Python environment):
+
+   ```bash
+   python - <<'PY'
+   import pathlib, recbole.model.knowledge_aware as ka
+   print(pathlib.Path(ka.__file__).parent)
+   PY
+   ```
+
+2. **Copy the model files** from this repo into that folder:
+
+   * `src/transerecbole.py`
+   * `src/compgcnrecbole.py`
+
+3. **Replace** `recbole/model/knowledge_aware/__init__.py` **with the version provided in this repository** (or, equivalently, **edit** your existing `__init__.py` to *expose* the new classes). Make sure it contains the following lines:
+
+   ```python
+   from .transerecbole import TransERecBole
+   from .compgcnrecbole import CompGCNRecBole
+
+   __all__ = [
+       # ... existing models ...
+       'TransERecBole',
+       'CompGCNRecBole',
+   ]
+   ```
+
+4. **Verify** that registration worked:
+
+   ```bash
+   python -c "from recbole.model.knowledge_aware import TransERecBole, CompGCNRecBole; print('OK')"
+   ```
+
+Once these steps are complete, the models can be invoked by **name** via RecBole’s `run_recbole` quick‑start API or via the provided runner scripts.
 
 ## Data
 
@@ -98,22 +137,33 @@ Common options include:
 
 > If your machine does not expose `gpu_id: 7` (as in the sample configs), change it to an available index (often `0`) or set `use_gpu: False` for CPU‑only runs.
 
-## How to Run
+## How to Use It
 
-You can launch the experiments via the provided scripts (recommended), or call RecBole directly.
+Follow this sequence for a clean, reproducible run.
 
-### 1) Using the ready‑made scripts
+**1) Create the environment**
 
+* Install Python and core dependencies as in the *Prerequisites* section (PyTorch, RecBole, pandas, and—if using CompGCN—`torch-scatter` compatible with your PyTorch/CUDA).
+
+**2) Register the custom models inside RecBole**
+
+* Perform the steps in **Installing the Custom Models into RecBole (knowledge\_aware)** above (copy `.py` files, replace/edit `__init__.py`, verify imports).
+
+**3) Prepare the dataset**
+
+* Use RecBole’s provided MovieLens‑100K or point `data_path` in the YAML configs to your local dataset path. Ensure the ID field names in the configs match the data schema.
+
+**4) Run with the supplied scripts (recommended)**
 From the project root:
 
 ```bash
-python "to run/run_TE.py"     # runs TransERecBole with configs/config_TE.yaml
-python "to run/run_CGCN.py"   # runs CompGCNRecBole with configs/config_CGCN.yaml
+python "to run/run_TE.py"     # TransERecBole with configs/config_TE.yaml
+python "to run/run_CGCN.py"   # CompGCNRecBole with configs/config_CGCN.yaml
 ```
 
-Each script uses `recbole.quick_start.run_recbole` and writes a small CSV summary (`resuts_TE.csv` / `resuts_CGCN.csv`) containing the returned metrics dictionary.
+These scripts invoke `recbole.quick_start.run_recbole` and write CSV summaries (`resuts_TE.csv`, `resuts_CGCN.csv`) with the returned metrics.
 
-### 2) Using RecBole’s quick\_start API directly
+**5) Alternative: use RecBole’s quick\_start API directly**
 
 ```python
 from recbole.quick_start import run_recbole
@@ -131,7 +181,9 @@ result_cgcn = run_recbole(
 )
 ```
 
-The returned dictionaries contain the best validation/test metrics under the configured evaluation protocol.
+**6) Inspect outputs**
+
+* Logs and console output are handled by RecBole; CSV summaries are saved by the runner scripts. Enable model checkpointing in the YAML if you wish to persist trained weights.
 
 ## Notes on the Custom Models
 
