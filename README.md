@@ -1,4 +1,4 @@
-# CompGCN-RecBole - SIIA Exam Project — Multi‑Relational Recommendation with RecBole (TransE & CompGCN)
+# CompGCN-RecBole — SIIA Exam Project — Multi‑Relational Recommendation with RecBole
 
 ## Overview
 
